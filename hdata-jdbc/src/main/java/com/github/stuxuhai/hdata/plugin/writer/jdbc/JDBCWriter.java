@@ -40,8 +40,8 @@ public class JDBCWriter extends Writer {
 
     @Override
     public void prepare(JobContext context, PluginConfig writerConfig) {
-        String keywordEscaper = writerConfig.getProperty(JDBCWriterProperties.KEYWORD_ESCAPER, "`");
-        keywordEscaper = writerConfig.getProperty(JDBCWriterProperties.KEYWORD_ESCAPER, "`");
+        String keywordEscaper = writerConfig.getProperty(JDBCWriterProperties.KEYWORD_ESCAPER, "");
+        keywordEscaper = writerConfig.getProperty(JDBCWriterProperties.KEYWORD_ESCAPER, "");
         columns = context.getFields();
         String driver = writerConfig.getString(JDBCWriterProperties.DRIVER);
         Preconditions.checkNotNull(driver, "JDBC writer required property: driver");
@@ -68,7 +68,7 @@ public class JDBCWriter extends Writer {
         try {
             connection = JdbcUtils.getConnection(driver, url, username, password);
             connection.setAutoCommit(false);
-            columnTypes = JdbcUtils.getColumnTypes(connection, table, keywordEscaper);
+            columnTypes = JdbcUtils.getColumnTypes(connection, table, keywordEscaper,driver);
 
             String sql = null;
             if (this.schema != null) {

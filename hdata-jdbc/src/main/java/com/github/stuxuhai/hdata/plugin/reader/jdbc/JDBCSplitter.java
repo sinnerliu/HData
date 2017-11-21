@@ -70,7 +70,7 @@ public class JDBCSplitter extends Splitter {
     @Override
     public List<PluginConfig> split(JobConfig jobConfig) {
         PluginConfig readerConfig = jobConfig.getReaderConfig();
-        String keywordEscaper = readerConfig.getProperty(JDBCReaderProperties.KEYWORD_ESCAPER, "`");
+        String keywordEscaper = readerConfig.getProperty(JDBCReaderProperties.KEYWORD_ESCAPER, "");
         String driver = readerConfig.getString(JDBCReaderProperties.DRIVER);
         Preconditions.checkNotNull(driver, "JDBC reader required property: driver");
 
@@ -116,7 +116,7 @@ public class JDBCSplitter extends Splitter {
                     try {
                         conn = JdbcUtils.getConnection(driver, url, username, password);
                         String selectColumns = keywordEscaper + Joiner.on(keywordEscaper + ", " + keywordEscaper)
-                                .join(Utils.getColumns(JdbcUtils.getColumnNames(conn, tableName, keywordEscaper), excludeColumns)) + keywordEscaper;
+                                .join(Utils.getColumns(JdbcUtils.getColumnNames(conn, tableName, keywordEscaper,driver), excludeColumns)) + keywordEscaper;
                         sql.append(selectColumns);
                     } catch (Exception e) {
                         throw new HDataException(e);
@@ -162,7 +162,7 @@ public class JDBCSplitter extends Splitter {
                     String table = readerConfig.getString(JDBCReaderProperties.TABLE);
                     LOG.info("Attempt to query digital primary key for table: {}", table);
                     conn = JdbcUtils.getConnection(driver, url, username, password);
-                    String splitColumn = JdbcUtils.getDigitalPrimaryKey(conn, conn.getCatalog(), null, getFirstTableName(table), keywordEscaper);
+                    String splitColumn = JdbcUtils.getDigitalPrimaryKey(conn, conn.getCatalog(), null, getFirstTableName(table), keywordEscaper,driver);
                     if (splitColumn != null) {
                         LOG.info("Table {} find digital primary key: {}", table, splitColumn);
                         return buildPluginConfigs(conn, sqlList, keywordEscaper + splitColumn + keywordEscaper, readerConfig);

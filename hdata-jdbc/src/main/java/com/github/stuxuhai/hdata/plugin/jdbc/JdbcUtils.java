@@ -23,17 +23,28 @@ public class JdbcUtils {
      *
      * @param connection
      * @param table
+     * @param driver
      * @return
      * @throws SQLException
      */
-    public static Map<String, Integer> getColumnTypes(Connection connection, String table, String keywordEscaper) throws SQLException {
+    public static Map<String, Integer> getColumnTypes(Connection connection, String table, String keywordEscaper,String driver) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ");
         sql.append(keywordEscaper);
         sql.append(table);
         sql.append(keywordEscaper);
         sql.append(" WHERE 1=2");
-        sql.append(" Limit 1");
+        System.out.println(driver);
+        if (driver.contains("oracle")){
+            sql.append(" or rownum=1");
+        }/*else if(driver.contains("db2")){
+        	sql.append(" or fetch first 1 rows only");
+        }*/else{
+            sql.append(" limit 1");
+
+        }
+
+
 
         ResultSetHandler<Map<String, Integer>> handler = new ResultSetHandler<Map<String, Integer>>() {
             @Override
@@ -56,17 +67,24 @@ public class JdbcUtils {
      *
      * @param conn
      * @param table
+     * @param driver
      * @return
      * @throws SQLException
      */
-    public static List<String> getColumnNames(Connection conn, String table, String keywordEscaper) throws SQLException {
+    public static List<String> getColumnNames(Connection conn, String table, String keywordEscaper,String driver) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ");
         sql.append(keywordEscaper);
         sql.append(table);
         sql.append(keywordEscaper);
         sql.append(" WHERE 1=2");
-        sql.append(" Limit 1");
+        System.out.println(driver);
+        if (driver.contains("oracle")){
+            sql.append(" or rownum=1");
+        }else{
+            sql.append(" limit 1");
+
+        }
 
         ResultSetHandler<List<String>> handler = new ResultSetHandler<List<String>>() {
 
@@ -140,7 +158,7 @@ public class JdbcUtils {
      * @return
      * @throws SQLException
      */
-    public static String getDigitalPrimaryKey(Connection conn, String catalog, String schema, String table, String keywordEscaper)
+    public static String getDigitalPrimaryKey(Connection conn, String catalog, String schema, String table, String keywordEscaper,String driver)
             throws SQLException {
         List<String> primaryKeys = new ArrayList<String>();
         ResultSet rs = conn.getMetaData().getPrimaryKeys(catalog, schema, table);
@@ -150,7 +168,7 @@ public class JdbcUtils {
         rs.close();
 
         if (primaryKeys.size() > 0) {
-            Map<String, Integer> map = getColumnTypes(conn, table, keywordEscaper);
+			Map<String, Integer> map = getColumnTypes(conn, table, keywordEscaper,driver);
             for (String pk : primaryKeys) {
                 if (isDigitalType(map.get(pk.toLowerCase()))) {
                     return pk;
